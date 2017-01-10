@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "718975128005",
+    "firebase_url": "https://friendlychat-20c6c.firebaseio.com",
+    "project_id": "friendlychat-20c6c",
+    "storage_bucket": "friendlychat-20c6c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:718975128005:android:52892496608212af",
+        "android_client_info": {
+          "package_name": "com.chatapp.lenovo.friendlychat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "718975128005-sc467nmr5jrbk64pj1vvu0jmojj77e3f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.chatapp.lenovo.friendlychat",
+            "certificate_hash": "56CFE84FB4953D5A1FA768ECD4BD11C66F5F9C68"
+          }
+        },
+        {
+          "client_id": "718975128005-imkj9n6klhstfof5gi4q1eiftu5vo4gb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAA_zUrJSJueEmlRePMyojQbFZGuIWsjWk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "718975128005-imkj9n6klhstfof5gi4q1eiftu5vo4gb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
