@@ -14,15 +14,15 @@
         android:id="@+id/photoImageView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/image_border"
         android:adjustViewBounds="true" />
 
     <android.support.v7.widget.CardView
         android:id="@+id/card_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingRight="10dp"
         android:layout_margin="1dp"
-        card_view:cardBackgroundColor="#d0d2d3"
+        card_view:cardBackgroundColor="#ffffff"
         card_view:contentPadding="3dp">
 
         <LinearLayout
@@ -30,21 +30,40 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
     <TextView
         android:id="@+id/messageTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="0"
+        android:textColor="#000000"
         android:textAppearance="?android:attr/textAppearanceMedium"
         tools:text="Message" />
+
+            <TextView
+                android:id="@+id/time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="14dp"
+                android:text="Time"
+                android:textSize="12dp" />
+            </LinearLayout>
 
     <TextView
         android:id="@+id/nameTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="0"
         android:textSize="12dp"
         tools:text="Name" />
+
+
+
+
         </LinearLayout>
     </android.support.v7.widget.CardView>
+
+
 </LinearLayout>

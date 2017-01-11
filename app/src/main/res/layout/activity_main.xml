@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:background="@drawable/chat_back"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
 
@@ -25,6 +26,7 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
+
         android:paddingLeft="6dp"
         android:paddingRight="6dp"
         android:layout_height="wrap_content"
@@ -62,6 +64,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
+                android:textColor="#ffffff"
                 android:layout_weight="1" />
 
             <Button
