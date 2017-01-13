@@ -2,8 +2,10 @@ package com.chatapp.lenovo.friendlychat;
 
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,6 +14,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
 import android.view.MenuInflater;
 import android.view.View;
@@ -24,6 +27,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.facebook.appevents.internal.Constants;
 import com.firebase.ui.auth.*;
 import com.firebase.ui.auth.BuildConfig;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -41,6 +45,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import java.io.ByteArrayOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -63,12 +68,13 @@ public class MainActivity extends AppCompatActivity {
     public static final int RC_SIGN_IN = 1;
     private static final int RC_PHOTO_PICKER = 2;
 
+    private static int REQUEST_IMAGE_CAPTURE = 111;
+
     private ListView mMessageListView;
     private MessageAdapter mMessageAdapter;
     private ProgressBar mProgressBar;
-    private ImageButton mPhotoPickerButton;
     private EditText mMessageEditText;
-    private Button mSendButton;
+    private ImageButton mSendButton;
 
     private String mUsername;
     // Firebase instance variables
@@ -79,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthStateListener;
     private FirebaseStorage mFirebaseStorage;
     private StorageReference mChatPhotosStorageReference;
+    private ImageButton mRecordAudio;
+    private ImageButton mTakephoto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,9 +107,10 @@ public class MainActivity extends AppCompatActivity {
         // Initialize references to views
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
         mMessageListView = (ListView) findViewById(R.id.messageListView);
-        mPhotoPickerButton = (ImageButton) findViewById(R.id.photoPickerButton);
         mMessageEditText = (EditText) findViewById(R.id.messageEditText);
-        mSendButton = (Button) findViewById(R.id.sendButton);
+        mSendButton = (ImageButton) findViewById(R.id.sendButton);
+        mRecordAudio = (ImageButton) findViewById(R.id.record_audio);
+        mTakephoto= (ImageButton)findViewById(R.id.take_photo);
 
         // Initialize message ListView and its adapter
         List<FriendlyMessage> friendlyMessages = new ArrayList<>();
@@ -111,16 +120,13 @@ public class MainActivity extends AppCompatActivity {
         // Initialize progress bar
         mProgressBar.setVisibility(ProgressBar.INVISIBLE);
 
-        // ImagePickerButton shows an image picker to upload a image for a message
+        /*// ImagePickerButton shows an image picker to upload a image for a message
         mPhotoPickerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/jpeg");
-                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-                startActivityForResult(Intent.createChooser(intent, "Complete action using"), RC_PHOTO_PICKER);
+
             }
-        });
+        });*/
 
         // Enable Send button when there's text to send
         mMessageEditText.addTextChangedListener(new TextWatcher() {
@@ -131,9 +137,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 if (charSequence.toString().trim().length() > 0) {
+                    mSendButton.setVisibility(View.VISIBLE);
+                    mRecordAudio.setVisibility(View.GONE);
                     mSendButton.setEnabled(true);
                 } else {
-                    mSendButton.setEnabled(false);
+                    mSendButton.setVisibility(View.GONE);
+                    mRecordAudio.setVisibility(View.VISIBLE);
                 }
             }
 
@@ -141,6 +150,8 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable editable) {
             }
         });
+
+
         mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT)});
 
         // Send button sends a message and clears the EditText
@@ -185,6 +196,22 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
+
+
+        mTakephoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onLaunchCamera();
+            }
+        });
+    }
+
+    private void onLaunchCamera() {
+
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(this.getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
     }
 
     @Override
@@ -204,7 +231,6 @@ public class MainActivity extends AppCompatActivity {
 
             // Get a reference to store file at chat_photos/<FILENAME>
             StorageReference photoRef = mChatPhotosStorageReference.child(selectedImageUri.getLastPathSegment());
-
             // Upload file to Firebase Storage
             photoRef.putFile(selectedImageUri)
                     .addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -224,8 +250,38 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
         }
-    }
+        else if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == this.RESULT_OK) {
+           /* Bundle extras = data.getExtras();
+            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            encodeBitmapAndSaveToFirebase(imageBitmap);*/
+            Uri uri = data.getData();
+            StorageReference sr = mChatPhotosStorageReference.child(uri.getLastPathSegment());
+            sr.putFile(uri)
+                    .addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            Uri downloadUri = taskSnapshot.getDownloadUrl();
+                            Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+5:30"));
+                            Date currentLocalTime = cal.getTime();
+                            DateFormat date = new SimpleDateFormat("HH:mm a");
+// you can get seconds by adding  "...:ss" to it
+                            date.setTimeZone(TimeZone.getTimeZone("GMT+5:30"));
 
+                            String localTime = date.format(currentLocalTime);
+                            // Set the download URL to the message box, so that the user can send it to the database
+                            FriendlyMessage friendlyMessage = new FriendlyMessage(null, mUsername, downloadUri.toString(),localTime);
+                            mMessagesDatabaseReference.push().setValue(friendlyMessage);
+
+                        }
+                    });
+        }
+    }
+  /*  public void encodeBitmapAndSaveToFirebase(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        String imageEncoded = Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+       StorageReference sr = mChatPhotosStorageReference.child()
+    }*/
     @Override
     protected void onResume() {
         super.onResume();
@@ -255,6 +311,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.sign_out_menu:
                 AuthUI.getInstance().signOut(this);
                 return true;
+            case R.id.photo :
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/jpeg");
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                startActivityForResult(Intent.createChooser(intent, "Complete action using"), RC_PHOTO_PICKER);
+
             default:
                 return super.onOptionsItemSelected(item);
         }
